@@ -8,6 +8,7 @@ import { generateFilledPdf } from '@/app/actions/generate-pdf';
  * the server action. Uses a request counter to discard stale results.
  */
 export function useDebouncedPdfGeneration(
+  templateId: string,
   values: Record<string, string>,
   onPdfGenerated: (base64: string) => void,
   delay = 500,
@@ -45,7 +46,7 @@ export function useDebouncedPdfGeneration(
 
       startTransition(async () => {
         try {
-          const base64 = await generateFilledPdf(values);
+          const base64 = await generateFilledPdf(templateId, values);
 
           // Only apply result if this is still the latest request
           if (currentRequest === requestCounterRef.current) {
@@ -66,7 +67,7 @@ export function useDebouncedPdfGeneration(
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [values, delay, hasNonEmptyValue]);
+  }, [templateId, values, delay, hasNonEmptyValue]);
 
   return { isPending, error };
 }

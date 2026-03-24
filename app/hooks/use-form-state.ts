@@ -35,10 +35,37 @@ function formReducer(
 
 export function useDocumentFormState(template: DocumentTemplate) {
   const initialState = useMemo(() => {
+    const now = new Date();
+    const todayUtc = [
+      now.getUTCFullYear(),
+      String(now.getUTCMonth() + 1).padStart(2, '0'),
+      String(now.getUTCDate()).padStart(2, '0'),
+    ].join('-');
+
+    const autoDateKeys = new Set(['date_today']);
+    // All date fields in hidden groups (e.g. signatures) also default to today
+    for (const group of template.fieldGroups) {
+      if (group.hidden) {
+        for (const field of group.fields) {
+          if (field.type === 'date') {
+            autoDateKeys.add(field.key);
+          }
+        }
+      }
+    }
+
     const state: Record<string, string> = {};
     for (const group of template.fieldGroups) {
       for (const field of group.fields) {
-        state[field.key] = '';
+        if (autoDateKeys.has(field.key)) {
+          state[field.key] = todayUtc;
+        } else if (field.key === 'overage_cost') {
+          state[field.key] = '$0.65';
+        } else if (field.key === 'miles_package') {
+          state[field.key] = 'New Pricing Package';
+        } else {
+          state[field.key] = '';
+        }
       }
     }
     return state;
@@ -64,5 +91,12 @@ export function useDocumentFormState(template: DocumentTemplate) {
     dispatch({ type: 'FIELD_CHANGE', key, value });
   }, []);
 
-  return { values, updateField };
+  const bulkUpdateFields = useCallback(
+    (fieldValues: Record<string, string>) => {
+      dispatch({ type: 'BULK_SET', values: fieldValues });
+    },
+    [],
+  );
+
+  return { values, updateField, bulkUpdateFields };
 }

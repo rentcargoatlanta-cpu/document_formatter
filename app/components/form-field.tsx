@@ -2,6 +2,15 @@
 
 import { memo, useCallback } from 'react';
 import type { DocumentField } from '@/lib/documents/types';
+import { cn } from '@/lib/utils';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface FormFieldProps {
   field: DocumentField;
@@ -42,35 +51,48 @@ function FormFieldInner({ field, value, onChange }: FormFieldProps) {
   const isComputed = field.computed === true;
 
   return (
-    <label className="flex flex-col gap-1">
+    <Label className="flex flex-col items-start gap-2 md:gap-1.5">
       <span
-        className={`flex items-center gap-1.5 text-xs font-medium text-foreground/70 ${
-          isComputed ? 'italic' : ''
-        }`}
+        className={cn(
+          'flex items-center gap-1.5 text-base font-medium text-foreground/70',
+          isComputed && 'italic',
+        )}
       >
         {field.label}
         {isComputed && (
-          <span className="rounded bg-foreground/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-foreground/50">
+          <Badge
+            variant="outline"
+            className="px-1.5 py-0 text-sm font-semibold uppercase tracking-wide"
+          >
             Auto
-          </span>
+          </Badge>
         )}
       </span>
-      <input
-        type={inputTypeFor(field)}
-        value={value}
-        onChange={handleChange}
-        placeholder={field.placeholder}
-        step={inputStepFor(field)}
-        readOnly={isComputed}
-        className={`w-full rounded-md border px-3 py-1.5 text-sm transition-shadow
-          ${
-            isComputed
-              ? 'cursor-default border-black/10 bg-foreground/5 text-foreground/60 dark:border-white/10'
-              : 'border-black/15 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/20 dark:border-white/15'
-          }
-        `}
-      />
-    </label>
+      {isComputed ? (
+        <Tooltip>
+          <TooltipTrigger>
+            <Input
+              type={inputTypeFor(field)}
+              value={value}
+              onChange={handleChange}
+              placeholder={field.placeholder}
+              step={inputStepFor(field)}
+              readOnly
+              className="cursor-default bg-muted/50 text-muted-foreground"
+            />
+          </TooltipTrigger>
+          <TooltipContent>Automatically calculated</TooltipContent>
+        </Tooltip>
+      ) : (
+        <Input
+          type={inputTypeFor(field)}
+          value={value}
+          onChange={handleChange}
+          placeholder={field.placeholder}
+          step={inputStepFor(field)}
+        />
+      )}
+    </Label>
   );
 }
 

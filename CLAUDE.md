@@ -99,6 +99,15 @@ Launch in parallel:
 4. **Processing Agent** (worktree) — Build the PDF parsing logic
 5. After 1-4 complete → **Quality Agent** — Lint, typecheck, review all changes
 
+### Agent Completion Requirements (MANDATORY)
+
+Agents MUST NOT stop or report as "done" unless **both** of the following conditions are met:
+
+1. **Specs are created** — The agent has produced or verified a clear specification for its work (e.g., component API, data flow, file structure, input/output contract). If no spec exists, the agent must create one before writing implementation code.
+2. **Approval plan is satisfied** — The agent's output must fully meet the approved plan. If a plan was established (via Plan mode, user approval, or task breakdown), every item in that plan must be addressed. Partially completed work is not acceptable — agents must loop back and finish all planned items before reporting completion.
+
+**If either condition is not met, the agent must continue working.** Do not return partial results, do not ask the user to finish remaining items, and do not skip planned work. An agent that stops early is a failed agent.
+
 ### General Workflow Patterns
 
 - **UI work**: Use the shadcn MCP to find and install components before building custom ones.

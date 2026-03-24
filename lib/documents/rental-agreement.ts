@@ -113,6 +113,7 @@ export const rentalAgreementTemplate: DocumentTemplate = {
     {
       id: 'totals',
       name: 'Totals',
+      hidden: true,
       fields: [
         { key: 'total_days', label: 'Total days', type: 'number', computed: true },
         { key: 'total_cost_p_day', label: 'Total cost per day', type: 'currency', computed: true },
