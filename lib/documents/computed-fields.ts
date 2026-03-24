@@ -101,17 +101,43 @@ export function computeDerivedFields(values: Record<string, string>): Record<str
   const totalDays = calculateTotalDays(start, end);
   if (totalDays) {
     result['total_days'] = totalDays;
+    // 100 free miles per rental day
+    result['free_miles'] = String(parseInt(totalDays) * 100);
   }
 
   const pricing = calculatePricing(start, end);
   if (pricing.weekdays > 0 || pricing.weekendDays > 0) {
-    // Total rental cost
-    result['total_r_cost'] = `$${pricing.totalCost.toFixed(2)}`;
+    // Line 1: Weekdays
+    if (pricing.weekdays > 0) {
+      result['r_description_1'] = 'New Pricing Structure (Weekdays)';
+      result['r_rate_1'] = 'Daily';
+      result['r_days_1'] = String(pricing.weekdays);
+      result['r_cost_per_day_1'] = WEEKDAY_RATE.toFixed(2);
+      result['r_total_1'] = (pricing.weekdays * WEEKDAY_RATE).toFixed(2);
+    }
 
-    // Average cost per day
+    // Line 2: Weekends
+    if (pricing.weekendDays > 0) {
+      result['r_description_2'] = 'New Pricing Structure (Weekends)';
+      result['r_rate_2'] = 'Daily';
+      result['r_days_2'] = String(pricing.weekendDays);
+      result['r_cost_per_day_2'] = WEEKEND_RATE.toFixed(2);
+      result['r_total_2'] = (pricing.weekendDays * WEEKEND_RATE).toFixed(2);
+    }
+
+    // Taxes
+    const salesTax = pricing.totalCost * 0.089;
+    const exciseTax = pricing.totalCost * 0.03;
+    result['sales_tax'] = salesTax.toFixed(2);
+    result['excise_tax'] = exciseTax.toFixed(2);
+
+    // Totals (no $ prefix — the PDF template already has $ labels)
+    const grandTotal = pricing.totalCost + salesTax + exciseTax;
+    result['total_r_cost'] = grandTotal.toFixed(2);
+
     const days = pricing.weekdays + pricing.weekendDays;
     if (days > 0) {
-      result['total_cost_p_day'] = `$${(pricing.totalCost / days).toFixed(2)}`;
+      result['total_cost_p_day'] = (grandTotal / days).toFixed(2);
     }
   }
 

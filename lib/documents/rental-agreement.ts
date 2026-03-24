@@ -15,7 +15,7 @@ export const rentalAgreementTemplate: DocumentTemplate = {
         { key: 'rental_start_datetime', label: 'Departure date', type: 'date' },
         { key: 'rental_end_datetime', label: 'Return date', type: 'date' },
         { key: 'miles_package', label: 'Miles package', type: 'text' },
-        { key: 'free_miles', label: 'Free miles included', type: 'number' },
+        { key: 'free_miles', label: 'Free miles included', type: 'number', computed: true },
       ],
     },
     {
