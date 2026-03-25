@@ -25,6 +25,8 @@ function inputTypeFor(field: DocumentField): string {
       return 'number';
     case 'date':
       return 'date';
+    case 'datetime':
+      return 'datetime-local';
     case 'email':
       return 'email';
     case 'tel':

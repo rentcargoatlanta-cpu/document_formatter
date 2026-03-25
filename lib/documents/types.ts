@@ -1,4 +1,4 @@
-export type FieldType = 'text' | 'date' | 'email' | 'tel' | 'number' | 'currency';
+export type FieldType = 'text' | 'date' | 'datetime' | 'email' | 'tel' | 'number' | 'currency';
 
 export interface DocumentField {
   key: string;          // matches [[key]] in the PDF template

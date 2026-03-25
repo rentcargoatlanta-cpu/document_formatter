@@ -60,7 +60,7 @@ export function useDocumentFormState(template: DocumentTemplate) {
         if (autoDateKeys.has(field.key)) {
           state[field.key] = todayUtc;
         } else if (field.key === 'overage_cost') {
-          state[field.key] = '$0.65';
+          state[field.key] = '0.65';
         } else if (field.key === 'miles_package') {
           state[field.key] = 'New Pricing Package';
         } else {
@@ -77,6 +77,22 @@ export function useDocumentFormState(template: DocumentTemplate) {
   const dob = values['date_of_birth'];
   const start = values['rental_start_datetime'];
   const end = values['rental_end_datetime'];
+  const fullName = values['full_name'];
+  const pickupPrice = values['pickup_price'];
+  const dropoffPrice = values['dropoff_price'];
+  const eTotal1 = values['e_total_1'];
+  const eTotal2 = values['e_total_2'];
+  const eTotal3 = values['e_total_3'];
+  const eTotal4 = values['e_total_4'];
+  const eTotal5 = values['e_total_5'];
+  const rentersFullname = values['renters_fullname'];
+  const additionalDriverFullname = values['additional_driver_fullname'];
+  const originalReturnDate = values['original_return_date'];
+  const extendedReturnDate = values['extended_return_date'];
+  const extensionDays = values['extension_days'];
+  const extensionDailyRate = values['extension_daily_rate'];
+  const customerFullname = values['customer_fullname'];
+  const rentalNumber = values['rental_number'];
 
   useEffect(() => {
     const derived = computeDerivedFields(values);
@@ -85,7 +101,7 @@ export function useDocumentFormState(template: DocumentTemplate) {
     }
     // Only re-run when the specific trigger fields change, not the whole values object
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dob, start, end]);
+  }, [dob, start, end, fullName, pickupPrice, dropoffPrice, eTotal1, eTotal2, eTotal3, eTotal4, eTotal5, rentersFullname, additionalDriverFullname, originalReturnDate, extendedReturnDate, extensionDays, extensionDailyRate, customerFullname, rentalNumber]);
 
   const updateField = useCallback((key: string, value: string) => {
     dispatch({ type: 'FIELD_CHANGE', key, value });

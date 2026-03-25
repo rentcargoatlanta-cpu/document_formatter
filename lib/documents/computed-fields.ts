@@ -21,15 +21,20 @@ export function calculateAge(dob: string): string {
   return String(age);
 }
 
+/** Extract the YYYY-MM-DD portion from a date or datetime-local string. */
+function extractDate(value: string): string {
+  return value.slice(0, 10);
+}
+
 /**
- * Calculate total days between two date strings (YYYY-MM-DD).
+ * Calculate total days between two date strings (YYYY-MM-DD or YYYY-MM-DDTHH:MM).
  * Returns the difference in days as a string, or empty string if invalid.
  */
 export function calculateTotalDays(start: string, end: string): string {
   if (!start || !end) return '';
 
-  const startDate = new Date(start + 'T00:00:00');
-  const endDate = new Date(end + 'T00:00:00');
+  const startDate = new Date(extractDate(start) + 'T00:00:00');
+  const endDate = new Date(extractDate(end) + 'T00:00:00');
 
   if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return '';
 
@@ -55,8 +60,8 @@ function calculatePricing(start: string, end: string): {
 } {
   if (!start || !end) return { weekdays: 0, weekendDays: 0, totalCost: 0 };
 
-  const startDate = new Date(start + 'T00:00:00');
-  const endDate = new Date(end + 'T00:00:00');
+  const startDate = new Date(extractDate(start) + 'T00:00:00');
+  const endDate = new Date(extractDate(end) + 'T00:00:00');
 
   if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
     return { weekdays: 0, weekendDays: 0, totalCost: 0 };
@@ -95,6 +100,22 @@ export function computeDerivedFields(values: Record<string, string>): Record<str
     result['customer_age'] = age;
   }
 
+  // Mirror full_name to the signature printed name field
+  const fullName = values['full_name'] ?? '';
+  if (fullName) {
+    result['customer_fullname'] = fullName;
+  }
+
+  // Additional driver document: mirror names to signature printed name fields
+  const rentersFullname = values['renters_fullname'] ?? '';
+  if (rentersFullname) {
+    result['renters_fullname_signature'] = rentersFullname;
+  }
+  const additionalDriverFullname = values['additional_driver_fullname'] ?? '';
+  if (additionalDriverFullname) {
+    result['additional_driver_full_name'] = additionalDriverFullname;
+  }
+
   const start = values['rental_start_datetime'] ?? '';
   const end = values['rental_end_datetime'] ?? '';
 
@@ -125,20 +146,66 @@ export function computeDerivedFields(values: Record<string, string>): Record<str
       result['r_total_2'] = (pricing.weekendDays * WEEKEND_RATE).toFixed(2);
     }
 
-    // Taxes
-    const salesTax = pricing.totalCost * 0.089;
-    const exciseTax = pricing.totalCost * 0.03;
+    // Calculate subtotal: rental + pickup + dropoff + equipment extras
+    const pickupCharge = parseFloat(values['pickup_price'] ?? '') || 0;
+    const dropoffCharge = parseFloat(values['dropoff_price'] ?? '') || 0;
+
+    let equipmentTotal = 0;
+    for (let i = 1; i <= 5; i++) {
+      equipmentTotal += parseFloat(values[`e_total_${i}`] ?? '') || 0;
+    }
+
+    const subtotal = pricing.totalCost + pickupCharge + dropoffCharge + equipmentTotal;
+
+    // Taxes on full subtotal
+    const salesTax = subtotal * 0.089;
+    const exciseTax = subtotal * 0.03;
     result['sales_tax'] = salesTax.toFixed(2);
     result['excise_tax'] = exciseTax.toFixed(2);
 
     // Totals (no $ prefix — the PDF template already has $ labels)
-    const grandTotal = pricing.totalCost + salesTax + exciseTax;
+    const grandTotal = subtotal + salesTax + exciseTax;
     result['total_r_cost'] = grandTotal.toFixed(2);
 
     const days = pricing.weekdays + pricing.weekendDays;
     if (days > 0) {
       result['total_cost_p_day'] = (grandTotal / days).toFixed(2);
     }
+  }
+
+  // --- Rental Extension computed fields ---
+  const origReturn = values['original_return_date'] ?? '';
+  const extReturn = values['extended_return_date'] ?? '';
+  const extDays = calculateTotalDays(origReturn, extReturn);
+  if (extDays) {
+    result['extension_days'] = extDays;
+  }
+
+  const extPricing = calculatePricing(origReturn, extReturn);
+  const extensionDays = extPricing.weekdays + extPricing.weekendDays;
+  if (extensionDays > 0) {
+    const avgRate = extPricing.totalCost / extensionDays;
+    result['extension_daily_rate'] = avgRate.toFixed(2);
+
+    const extSubtotal = extPricing.totalCost;
+    const extSalesTax = extSubtotal * 0.089;
+    const extExciseTax = extSubtotal * 0.03;
+    const extTotal = extSubtotal + extSalesTax + extExciseTax;
+
+    result['extension_subtotal'] = extSubtotal.toFixed(2);
+    result['extension_sales_tax'] = extSalesTax.toFixed(2);
+    result['extension_excise_tax'] = extExciseTax.toFixed(2);
+    result['extension_total'] = extTotal.toFixed(2);
+  }
+
+  // Mirror fields to hidden signature section
+  const custFullname = values['customer_fullname'] ?? '';
+  if (custFullname) {
+    result['renter_fullname'] = custFullname;
+  }
+  const rentalNumber = values['rental_number'] ?? '';
+  if (rentalNumber) {
+    result['rental_number_reference'] = rentalNumber;
   }
 
   return result;
