@@ -118,25 +118,26 @@ export function DocumentViewer({ templates }: DocumentViewerProps) {
       <Separator />
 
       {/* Main content */}
-      <Tabs value={mobileTab} onValueChange={(v) => setMobileTab(v as string)} className="flex flex-1 flex-col overflow-hidden">
-        <div className="flex flex-1 flex-col overflow-hidden md:flex-row">
-          <aside className={`flex flex-col md:flex-none md:w-[340px] lg:w-[420px] overflow-y-auto border-r-0 md:border-r border-border bg-muted/30${mobileTab !== 'form' ? ' hidden md:flex' : ''}`}>
-            <DocumentForm
-              key={activeTemplate.id}
-              template={activeTemplate}
-              onPdfGenerated={handlePdfGenerated}
-              onGeneratingChange={handleGeneratingChange}
-            />
-          </aside>
-          <main className={`flex flex-1 flex-col overflow-hidden bg-muted/5 min-h-[50vh] md:min-h-0${mobileTab !== 'preview' ? ' hidden md:flex' : ''}`}>
-            <PdfPreview
-              pdfData={pdfData}
-              templateUrl={staticPdfUrl(activeTemplate.templatePath)}
-            />
-          </main>
-        </div>
-        {/* Bottom tab bar -- mobile only */}
-        <div className="border-t border-border bg-background px-4 py-2 md:hidden">
+      <div className="flex flex-1 flex-col overflow-hidden md:flex-row">
+        <aside className={`flex flex-col md:flex-none md:w-[340px] lg:w-[420px] overflow-y-auto border-r-0 md:border-r border-border bg-muted/30${mobileTab !== 'form' ? ' hidden md:flex' : ''}`}>
+          <DocumentForm
+            key={activeTemplate.id}
+            template={activeTemplate}
+            onPdfGenerated={handlePdfGenerated}
+            onGeneratingChange={handleGeneratingChange}
+          />
+        </aside>
+        <main className={`flex flex-1 flex-col overflow-hidden bg-muted/5 min-h-[50vh] md:min-h-0${mobileTab !== 'preview' ? ' hidden md:flex' : ''}`}>
+          <PdfPreview
+            pdfData={pdfData}
+            templateUrl={staticPdfUrl(activeTemplate.templatePath)}
+          />
+        </main>
+      </div>
+
+      {/* Bottom tab bar -- mobile only */}
+      <Tabs value={mobileTab} onValueChange={(v) => setMobileTab(v as string)} className="md:hidden">
+        <div className="border-t border-border bg-background px-4 py-2">
           <TabsList className="w-full">
             <TabsTrigger value="form" className="flex-1">Form</TabsTrigger>
             <TabsTrigger value="preview" className="flex-1">Preview</TabsTrigger>
