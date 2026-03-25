@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 
 interface DocumentViewerProps {
@@ -35,6 +36,17 @@ export function DocumentViewer({ templates }: DocumentViewerProps) {
   const handleGeneratingChange = useCallback((generating: boolean) => {
     setIsGenerating(generating);
   }, []);
+
+  const handleDownload = useCallback(() => {
+    if (!pdfData) return;
+    const blob = new Blob([pdfData.buffer as ArrayBuffer], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${activeTemplate.id}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [pdfData, activeTemplate.id]);
 
   const handleTemplateChange = useCallback(
     (templateId: string | null) => {
@@ -68,12 +80,22 @@ export function DocumentViewer({ templates }: DocumentViewerProps) {
           </SelectContent>
         </Select>
 
-        {isGenerating && (
-          <Badge variant="secondary" className="ml-auto gap-1.5">
-            <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-foreground/40" />
-            Updating...
-          </Badge>
-        )}
+        <div className="ml-auto flex items-center gap-2">
+          {isGenerating && (
+            <Badge variant="secondary" className="gap-1.5">
+              <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-foreground/40" />
+              Updating...
+            </Badge>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!pdfData || isGenerating}
+            onClick={handleDownload}
+          >
+            Export PDF
+          </Button>
+        </div>
       </header>
       <Separator />
 
