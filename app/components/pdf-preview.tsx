@@ -13,9 +13,19 @@ interface PdfPreviewProps {
 export function PdfPreview({ pdfData, templateUrl }: PdfPreviewProps) {
   const [numPages, setNumPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [resizeTick, setResizeTick] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const pdfDocRef = useRef<pdfjs.PDFDocumentProxy | null>(null);
   const renderTasksRef = useRef<Map<number, pdfjs.RenderTask>>(new Map());
+
+  // Re-render PDF on container resize (e.g. phone orientation change)
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(() => setResizeTick(t => t + 1));
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   // Load PDF and render pages
   useEffect(() => {
@@ -75,10 +85,12 @@ export function PdfPreview({ pdfData, templateUrl }: PdfPreviewProps) {
             const page = await doc.getPage(pageNum);
             if (cancelled) return;
 
-            // Calculate scale to fit container width, then reduce for breathing room
-            const containerWidth = container.clientWidth - 32;
+            // Calculate scale to fit container width with responsive adjustments
+            const padding = container.clientWidth < 500 ? 16 : 32;
+            const effectiveWidth = container.clientWidth - padding;
             const unscaledViewport = page.getViewport({ scale: 1 });
-            const scale = (containerWidth / unscaledViewport.width) * 0.6;
+            const scaleFactor = effectiveWidth < 500 ? 0.95 : 0.6;
+            const scale = (effectiveWidth / unscaledViewport.width) * scaleFactor;
             const viewport = page.getViewport({ scale });
 
             // Reuse existing canvas or create new one
@@ -152,7 +164,7 @@ export function PdfPreview({ pdfData, templateUrl }: PdfPreviewProps) {
       }
       tasksMap.clear();
     };
-  }, [pdfData, templateUrl]);
+  }, [pdfData, templateUrl, resizeTick]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -205,7 +217,7 @@ export function PdfPreview({ pdfData, templateUrl }: PdfPreviewProps) {
       <div
         ref={containerRef}
         onScroll={handleScroll}
-        className="flex flex-1 flex-col items-center gap-4 overflow-y-auto bg-muted/20 p-4"
+        className="flex flex-1 flex-col items-center gap-2 md:gap-4 overflow-y-auto bg-muted/20 p-2 md:p-4"
       />
     </div>
   );

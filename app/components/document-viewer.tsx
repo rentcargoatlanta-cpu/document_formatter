@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { DocumentForm } from '@/app/components/document-form';
 import { PdfPreview } from '@/app/components/pdf-preview';
 import type { DocumentTemplate } from '@/lib/documents/types';
@@ -14,6 +14,12 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from '@/components/ui/tabs';
 
 interface DocumentViewerProps {
   templates: DocumentTemplate[];
@@ -27,6 +33,19 @@ export function DocumentViewer({ templates }: DocumentViewerProps) {
   const [activeTemplate, setActiveTemplate] = useState(templates[0]);
   const [pdfData, setPdfData] = useState<Uint8Array | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [mobileTab, setMobileTab] = useState('form');
+
+  const prevGenerating = useRef(false);
+  useEffect(() => {
+    const wasGenerating = prevGenerating.current;
+    prevGenerating.current = isGenerating;
+    if (wasGenerating && !isGenerating && pdfData) {
+      const id = requestAnimationFrame(() => {
+        if (window.innerWidth < 768) setMobileTab('preview');
+      });
+      return () => cancelAnimationFrame(id);
+    }
+  }, [isGenerating, pdfData]);
 
   const handlePdfGenerated = useCallback((base64: string) => {
     const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
@@ -64,11 +83,11 @@ export function DocumentViewer({ templates }: DocumentViewerProps) {
     <div className="flex h-screen flex-col">
       {/* Top bar */}
       <header className="flex items-center gap-2 md:gap-4 bg-background px-3 md:px-6 py-2.5 md:py-3">
-        <h1 className="text-lg md:text-xl font-semibold text-foreground">
+        <h1 className="truncate text-lg md:text-xl font-semibold text-foreground">
           Document Formatter
         </h1>
         <Select value={activeTemplate.id} onValueChange={handleTemplateChange}>
-          <SelectTrigger className="w-auto">
+          <SelectTrigger className="w-auto max-w-[140px] sm:max-w-none truncate">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -84,7 +103,7 @@ export function DocumentViewer({ templates }: DocumentViewerProps) {
           {isGenerating && (
             <Badge variant="secondary" className="gap-1.5">
               <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-foreground/40" />
-              Updating...
+              <span className="hidden sm:inline">Updating...</span>
             </Badge>
           )}
           <Button
@@ -100,26 +119,31 @@ export function DocumentViewer({ templates }: DocumentViewerProps) {
       <Separator />
 
       {/* Main content */}
-      <div className="flex flex-1 flex-col overflow-hidden md:flex-row">
-        {/* Left panel -- form */}
-        <aside className="flex w-full flex-col border-b border-border bg-muted/30 md:w-[340px] lg:w-[420px] md:border-b-0">
-          <DocumentForm
-            key={activeTemplate.id}
-            template={activeTemplate}
-            onPdfGenerated={handlePdfGenerated}
-            onGeneratingChange={handleGeneratingChange}
-          />
-        </aside>
-        <Separator orientation="vertical" className="hidden md:block" />
-
-        {/* Right panel -- PDF preview */}
-        <main className="flex flex-1 flex-col overflow-hidden bg-muted/5 min-h-[50vh] md:min-h-0">
-          <PdfPreview
-            pdfData={pdfData}
-            templateUrl={staticPdfUrl(activeTemplate.templatePath)}
-          />
-        </main>
-      </div>
+      <Tabs value={mobileTab} onValueChange={(v) => setMobileTab(v as string)} className="flex flex-1 flex-col overflow-hidden">
+        <div className="flex flex-1 flex-col overflow-hidden md:flex-row">
+          <TabsContent value="form" keepMounted className="m-0 flex flex-col data-[hidden]:hidden md:data-[hidden]:flex md:w-[340px] lg:w-[420px] overflow-y-auto border-r-0 md:border-r border-border bg-muted/30">
+            <DocumentForm
+              key={activeTemplate.id}
+              template={activeTemplate}
+              onPdfGenerated={handlePdfGenerated}
+              onGeneratingChange={handleGeneratingChange}
+            />
+          </TabsContent>
+          <TabsContent value="preview" keepMounted className="m-0 flex flex-1 flex-col data-[hidden]:hidden md:data-[hidden]:flex overflow-hidden bg-muted/5 min-h-[50vh] md:min-h-0">
+            <PdfPreview
+              pdfData={pdfData}
+              templateUrl={staticPdfUrl(activeTemplate.templatePath)}
+            />
+          </TabsContent>
+        </div>
+        {/* Bottom tab bar -- mobile only */}
+        <div className="border-t border-border bg-background px-4 py-2 md:hidden">
+          <TabsList className="w-full">
+            <TabsTrigger value="form" className="flex-1">Form</TabsTrigger>
+            <TabsTrigger value="preview" className="flex-1">Preview</TabsTrigger>
+          </TabsList>
+        </div>
+      </Tabs>
     </div>
   );
 }
