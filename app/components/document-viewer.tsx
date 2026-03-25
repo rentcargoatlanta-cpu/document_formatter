@@ -121,7 +121,7 @@ export function DocumentViewer({ templates }: DocumentViewerProps) {
       {/* Main content */}
       <Tabs value={mobileTab} onValueChange={(v) => setMobileTab(v as string)} className="flex flex-1 flex-col overflow-hidden">
         <div className="flex flex-1 flex-col overflow-hidden md:flex-row">
-          <TabsContent value="form" keepMounted className="m-0 flex flex-col data-[hidden]:hidden md:data-[hidden]:flex md:w-[340px] lg:w-[420px] overflow-y-auto border-r-0 md:border-r border-border bg-muted/30">
+          <TabsContent value="form" keepMounted className="m-0 flex flex-col md:[&[hidden]]:flex md:flex-none md:w-[340px] lg:w-[420px] overflow-y-auto border-r-0 md:border-r border-border bg-muted/30">
             <DocumentForm
               key={activeTemplate.id}
               template={activeTemplate}
@@ -129,7 +129,7 @@ export function DocumentViewer({ templates }: DocumentViewerProps) {
               onGeneratingChange={handleGeneratingChange}
             />
           </TabsContent>
-          <TabsContent value="preview" keepMounted className="m-0 flex flex-1 flex-col data-[hidden]:hidden md:data-[hidden]:flex overflow-hidden bg-muted/5 min-h-[50vh] md:min-h-0">
+          <TabsContent value="preview" keepMounted className="m-0 flex flex-1 flex-col md:[&[hidden]]:flex overflow-hidden bg-muted/5 min-h-[50vh] md:min-h-0">
             <PdfPreview
               pdfData={pdfData}
               templateUrl={staticPdfUrl(activeTemplate.templatePath)}
