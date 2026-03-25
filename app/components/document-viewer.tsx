@@ -18,7 +18,6 @@ import {
   Tabs,
   TabsList,
   TabsTrigger,
-  TabsContent,
 } from '@/components/ui/tabs';
 
 interface DocumentViewerProps {
@@ -121,20 +120,20 @@ export function DocumentViewer({ templates }: DocumentViewerProps) {
       {/* Main content */}
       <Tabs value={mobileTab} onValueChange={(v) => setMobileTab(v as string)} className="flex flex-1 flex-col overflow-hidden">
         <div className="flex flex-1 flex-col overflow-hidden md:flex-row">
-          <TabsContent value="form" keepMounted className="m-0 flex flex-col md:[&[hidden]]:flex md:flex-none md:w-[340px] lg:w-[420px] overflow-y-auto border-r-0 md:border-r border-border bg-muted/30">
+          <aside className={`flex flex-col md:flex-none md:w-[340px] lg:w-[420px] overflow-y-auto border-r-0 md:border-r border-border bg-muted/30${mobileTab !== 'form' ? ' hidden md:flex' : ''}`}>
             <DocumentForm
               key={activeTemplate.id}
               template={activeTemplate}
               onPdfGenerated={handlePdfGenerated}
               onGeneratingChange={handleGeneratingChange}
             />
-          </TabsContent>
-          <TabsContent value="preview" keepMounted className="m-0 flex flex-1 flex-col md:[&[hidden]]:flex overflow-hidden bg-muted/5 min-h-[50vh] md:min-h-0">
+          </aside>
+          <main className={`flex flex-1 flex-col overflow-hidden bg-muted/5 min-h-[50vh] md:min-h-0${mobileTab !== 'preview' ? ' hidden md:flex' : ''}`}>
             <PdfPreview
               pdfData={pdfData}
               templateUrl={staticPdfUrl(activeTemplate.templatePath)}
             />
-          </TabsContent>
+          </main>
         </div>
         {/* Bottom tab bar -- mobile only */}
         <div className="border-t border-border bg-background px-4 py-2 md:hidden">
