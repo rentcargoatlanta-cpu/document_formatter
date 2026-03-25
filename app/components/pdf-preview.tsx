@@ -10,10 +10,15 @@ interface PdfPreviewProps {
   templateUrl: string;
 }
 
+const ZOOM_MIN = 0.5;
+const ZOOM_MAX = 3.0;
+const ZOOM_STEP = 0.25;
+
 export function PdfPreview({ pdfData, templateUrl }: PdfPreviewProps) {
   const [numPages, setNumPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [resizeTick, setResizeTick] = useState(0);
+  const [zoomLevel, setZoomLevel] = useState(1.0);
   const containerRef = useRef<HTMLDivElement>(null);
   const pdfDocRef = useRef<pdfjs.PDFDocumentProxy | null>(null);
   const renderTasksRef = useRef<Map<number, pdfjs.RenderTask>>(new Map());
@@ -25,6 +30,19 @@ export function PdfPreview({ pdfData, templateUrl }: PdfPreviewProps) {
     const observer = new ResizeObserver(() => setResizeTick(t => t + 1));
     observer.observe(el);
     return () => observer.disconnect();
+  }, []);
+
+  // Zoom handlers
+  const handleZoomIn = useCallback(() => {
+    setZoomLevel(z => Math.min(z + ZOOM_STEP, ZOOM_MAX));
+  }, []);
+
+  const handleZoomOut = useCallback(() => {
+    setZoomLevel(z => Math.max(z - ZOOM_STEP, ZOOM_MIN));
+  }, []);
+
+  const handleZoomReset = useCallback(() => {
+    setZoomLevel(1.0);
   }, []);
 
   // Load PDF and render pages
@@ -89,7 +107,7 @@ export function PdfPreview({ pdfData, templateUrl }: PdfPreviewProps) {
             const padding = container.clientWidth < 500 ? 16 : 32;
             const effectiveWidth = container.clientWidth - padding;
             const unscaledViewport = page.getViewport({ scale: 1 });
-            const scaleFactor = effectiveWidth < 500 ? 0.95 : 0.6;
+            const scaleFactor = (effectiveWidth < 500 ? 0.95 : 0.6) * zoomLevel;
             const scale = (effectiveWidth / unscaledViewport.width) * scaleFactor;
             const viewport = page.getViewport({ scale });
 
@@ -164,7 +182,7 @@ export function PdfPreview({ pdfData, templateUrl }: PdfPreviewProps) {
       }
       tasksMap.clear();
     };
-  }, [pdfData, templateUrl, resizeTick]);
+  }, [pdfData, templateUrl, resizeTick, zoomLevel]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -177,6 +195,11 @@ export function PdfPreview({ pdfData, templateUrl }: PdfPreviewProps) {
       }
     };
   }, []);
+
+  // Reset zoom when PDF source changes
+  useEffect(() => {
+    setZoomLevel(1.0);
+  }, [pdfData, templateUrl]);
 
   // Scroll tracking to determine current visible page
   const handleScroll = useCallback(() => {
@@ -206,7 +229,32 @@ export function PdfPreview({ pdfData, templateUrl }: PdfPreviewProps) {
     <div className="flex h-full flex-col">
       {/* Toolbar */}
       {numPages > 0 && (
-        <div className="flex items-center justify-center border-b border-border bg-muted/30 px-4 py-1.5">
+        <div className="flex items-center justify-between border-b border-border bg-muted/30 px-3 py-1.5">
+          <div className="flex items-center gap-1">
+            <button
+              onClick={handleZoomOut}
+              disabled={zoomLevel <= ZOOM_MIN}
+              className="flex h-7 w-7 items-center justify-center rounded text-sm text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40 disabled:pointer-events-none"
+              aria-label="Zoom out"
+            >
+              {'\u2212'}
+            </button>
+            <button
+              onClick={handleZoomReset}
+              className="flex h-7 min-w-[3.5rem] items-center justify-center rounded px-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+              aria-label="Reset zoom"
+            >
+              {Math.round(zoomLevel * 100)}%
+            </button>
+            <button
+              onClick={handleZoomIn}
+              disabled={zoomLevel >= ZOOM_MAX}
+              className="flex h-7 w-7 items-center justify-center rounded text-sm text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40 disabled:pointer-events-none"
+              aria-label="Zoom in"
+            >
+              +
+            </button>
+          </div>
           <span className="text-xs text-muted-foreground">
             Page {currentPage} of {numPages}
           </span>
