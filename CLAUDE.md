@@ -108,6 +108,10 @@ Agents MUST NOT stop or report as "done" unless **both** of the following condit
 
 **If either condition is not met, the agent must continue working.** Do not return partial results, do not ask the user to finish remaining items, and do not skip planned work. An agent that stops early is a failed agent.
 
+### Git Policy
+
+**Agents must NOT use git.** No commits, pushes, pulls, merges, checkouts, or any other git commands. All git operations are performed manually by the user. The `Bash(git *)` command is denied in project settings.
+
 ### General Workflow Patterns
 
 - **UI work**: Use the shadcn MCP to find and install components before building custom ones.

@@ -9,6 +9,7 @@ All work in this project is parallelized across multiple agents. Each agent foll
 - TypeScript strict mode is enabled — no `any` types without justification.
 - Prefer server components by default; only use `"use client"` when client-side interactivity requires it.
 - Path alias: use `@/*` for imports (maps to project root).
+- **No git usage.** Agents must NOT run any git commands (commit, push, pull, checkout, merge, etc.). All git operations are handled manually by the user.
 - When your task is done, report back a concise summary of what you created/changed and any decisions you made.
 <!-- END:shared-agent-rules -->
 
