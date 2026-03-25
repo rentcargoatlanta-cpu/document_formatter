@@ -79,9 +79,9 @@ export function DocumentViewer({ templates }: DocumentViewerProps) {
   );
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-dvh flex-col">
       {/* Top bar */}
-      <header className="flex items-center gap-2 md:gap-4 bg-background px-3 md:px-6 py-2.5 md:py-3">
+      <header className="flex items-center gap-2 md:gap-4 bg-background px-3 md:px-6 pt-[max(0.625rem,env(safe-area-inset-top))] pb-2.5 md:pt-[max(0.75rem,env(safe-area-inset-top))] md:pb-3">
         <h1 className="truncate text-lg md:text-xl font-semibold text-foreground">
           Document Formatter
         </h1>
@@ -137,7 +137,7 @@ export function DocumentViewer({ templates }: DocumentViewerProps) {
 
       {/* Bottom tab bar -- mobile only */}
       <Tabs value={mobileTab} onValueChange={(v) => setMobileTab(v as string)} className="md:hidden">
-        <div className="border-t border-border bg-background px-4 py-2">
+        <div className="border-t border-border bg-background px-4 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
           <TabsList className="w-full">
             <TabsTrigger value="form" className="flex-1">Form</TabsTrigger>
             <TabsTrigger value="preview" className="flex-1">Preview</TabsTrigger>
