@@ -6,6 +6,8 @@ export interface DocumentField {
   type: FieldType;      // HTML input type
   placeholder?: string; // input placeholder text
   computed?: boolean;    // if true, rendered as readonly with visual indicator
+  maxLength?: number;   // caps character count on the input
+  digitsOnly?: boolean; // strip non-digit characters on input
 }
 
 export interface FieldGroup {

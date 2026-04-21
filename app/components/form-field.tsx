@@ -45,9 +45,12 @@ function inputStepFor(field: DocumentField): string | undefined {
 function FormFieldInner({ field, value, onChange }: FormFieldProps) {
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      onChange(field.key, e.target.value);
+      let next = e.target.value;
+      if (field.digitsOnly) next = next.replace(/\D/g, '');
+      if (field.maxLength !== undefined) next = next.slice(0, field.maxLength);
+      onChange(field.key, next);
     },
-    [field.key, onChange],
+    [field.key, field.digitsOnly, field.maxLength, onChange],
   );
 
   const isComputed = field.computed === true;
@@ -92,6 +95,9 @@ function FormFieldInner({ field, value, onChange }: FormFieldProps) {
           onChange={handleChange}
           placeholder={field.placeholder}
           step={inputStepFor(field)}
+          maxLength={field.maxLength}
+          inputMode={field.digitsOnly ? 'numeric' : undefined}
+          pattern={field.digitsOnly ? '[0-9]*' : undefined}
         />
       )}
     </Label>
