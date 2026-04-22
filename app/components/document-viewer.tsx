@@ -33,22 +33,21 @@ export function DocumentViewer({ templates }: DocumentViewerProps) {
   const [pdfData, setPdfData] = useState<Uint8Array | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [mobileTab, setMobileTab] = useState('form');
+  const [hasUnseenPreview, setHasUnseenPreview] = useState(false);
 
-  const prevGenerating = useRef(false);
+  // Mirror mobileTab in a ref so handlePdfGenerated can read the current tab
+  // without re-creating its closure on every tab change.
+  const mobileTabRef = useRef(mobileTab);
   useEffect(() => {
-    const wasGenerating = prevGenerating.current;
-    prevGenerating.current = isGenerating;
-    if (wasGenerating && !isGenerating && pdfData) {
-      const id = requestAnimationFrame(() => {
-        if (window.innerWidth < 768) setMobileTab('preview');
-      });
-      return () => cancelAnimationFrame(id);
-    }
-  }, [isGenerating, pdfData]);
+    mobileTabRef.current = mobileTab;
+  }, [mobileTab]);
 
   const handlePdfGenerated = useCallback((base64: string) => {
     const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
     setPdfData(bytes);
+    if (mobileTabRef.current !== 'preview') {
+      setHasUnseenPreview(true);
+    }
   }, []);
 
   const handleGeneratingChange = useCallback((generating: boolean) => {
@@ -86,7 +85,7 @@ export function DocumentViewer({ templates }: DocumentViewerProps) {
           Document Formatter
         </h1>
         <Select value={activeTemplate.id} onValueChange={handleTemplateChange}>
-          <SelectTrigger className="w-auto max-w-[140px] sm:max-w-none truncate">
+          <SelectTrigger className="flex-1 sm:flex-none sm:w-auto sm:max-w-none min-w-0 truncate">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -136,11 +135,29 @@ export function DocumentViewer({ templates }: DocumentViewerProps) {
       </div>
 
       {/* Bottom tab bar -- mobile only */}
-      <Tabs value={mobileTab} onValueChange={(v) => setMobileTab(v as string)} className="md:hidden">
+      <Tabs
+        value={mobileTab}
+        onValueChange={(v) => {
+          const value = v as string;
+          setMobileTab(value);
+          if (value === 'preview') setHasUnseenPreview(false);
+        }}
+        className="md:hidden"
+      >
         <div className="border-t border-border bg-background px-4 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
-          <TabsList className="w-full">
+          <TabsList className="w-full h-12 md:h-8">
             <TabsTrigger value="form" className="flex-1">Form</TabsTrigger>
-            <TabsTrigger value="preview" className="flex-1">Preview</TabsTrigger>
+            <TabsTrigger value="preview" className="flex-1">
+              <span className="relative">
+                Preview
+                {hasUnseenPreview && (
+                  <span
+                    aria-label="New preview available"
+                    className="absolute -top-0.5 -right-2.5 inline-block h-1.5 w-1.5 rounded-full bg-primary"
+                  />
+                )}
+              </span>
+            </TabsTrigger>
           </TabsList>
         </div>
       </Tabs>

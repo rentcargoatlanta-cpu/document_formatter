@@ -55,7 +55,7 @@ export function PickupDropoffCard({
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <Card>
         <CardHeader className="p-0">
-          <CollapsibleTrigger className="flex w-full items-center justify-between px-3 py-3.5 text-left transition-colors hover:bg-muted/50 md:px-4 md:py-3">
+          <CollapsibleTrigger className="flex w-full items-center justify-between px-3 py-4 text-left transition-colors hover:bg-muted/50 md:px-4 md:py-3">
             <span className="text-lg font-semibold">
               Pickup &amp; Drop-off
             </span>

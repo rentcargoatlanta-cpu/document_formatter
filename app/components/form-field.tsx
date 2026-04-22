@@ -42,6 +42,37 @@ function inputStepFor(field: DocumentField): string | undefined {
   return undefined;
 }
 
+function inputModeFor(
+  field: DocumentField,
+): React.HTMLAttributes<HTMLInputElement>['inputMode'] | undefined {
+  if (field.digitsOnly) return 'numeric';
+  switch (field.type) {
+    case 'currency':
+      return 'decimal';
+    case 'number':
+      return 'numeric';
+    case 'email':
+      return 'email';
+    case 'tel':
+      return 'tel';
+    default:
+      return undefined;
+  }
+}
+
+function autoCompleteFor(field: DocumentField): string | undefined {
+  if (field.digitsOnly) return 'off';
+  if (field.computed) return 'off';
+  switch (field.type) {
+    case 'email':
+      return 'email';
+    case 'tel':
+      return 'tel';
+    default:
+      return undefined;
+  }
+}
+
 function FormFieldInner({ field, value, onChange }: FormFieldProps) {
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -96,8 +127,9 @@ function FormFieldInner({ field, value, onChange }: FormFieldProps) {
           placeholder={field.placeholder}
           step={inputStepFor(field)}
           maxLength={field.maxLength}
-          inputMode={field.digitsOnly ? 'numeric' : undefined}
+          inputMode={inputModeFor(field)}
           pattern={field.digitsOnly ? '[0-9]*' : undefined}
+          autoComplete={autoCompleteFor(field)}
         />
       )}
     </Label>

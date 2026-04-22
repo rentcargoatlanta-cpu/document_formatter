@@ -234,14 +234,14 @@ export function PdfPreview({ pdfData, templateUrl }: PdfPreviewProps) {
             <button
               onClick={handleZoomOut}
               disabled={zoomLevel <= ZOOM_MIN}
-              className="flex h-7 w-7 items-center justify-center rounded text-sm text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40 disabled:pointer-events-none"
+              className="flex h-9 w-9 md:h-7 md:w-7 items-center justify-center rounded text-sm text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40 disabled:pointer-events-none"
               aria-label="Zoom out"
             >
               {'\u2212'}
             </button>
             <button
               onClick={handleZoomReset}
-              className="flex h-7 min-w-[3.5rem] items-center justify-center rounded px-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+              className="flex h-9 md:h-7 min-w-[3.5rem] items-center justify-center rounded px-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
               aria-label="Reset zoom"
             >
               {Math.round(zoomLevel * 100)}%
@@ -249,7 +249,7 @@ export function PdfPreview({ pdfData, templateUrl }: PdfPreviewProps) {
             <button
               onClick={handleZoomIn}
               disabled={zoomLevel >= ZOOM_MAX}
-              className="flex h-7 w-7 items-center justify-center rounded text-sm text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40 disabled:pointer-events-none"
+              className="flex h-9 w-9 md:h-7 md:w-7 items-center justify-center rounded text-sm text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40 disabled:pointer-events-none"
               aria-label="Zoom in"
             >
               +

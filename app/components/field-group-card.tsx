@@ -42,7 +42,7 @@ export function FieldGroupCard({
       <Card>
         <CardHeader className="p-0">
           <CollapsibleTrigger
-            className="flex w-full items-center justify-between px-3 md:px-4 py-3.5 md:py-3 text-left transition-colors hover:bg-muted/50"
+            className="flex w-full items-center justify-between px-3 md:px-4 py-4 md:py-3 text-left transition-colors hover:bg-muted/50"
           >
             <span className="text-lg font-semibold">{group.name}</span>
             <span className="flex items-center gap-2">

@@ -37,6 +37,14 @@ function formatCurrency(value: string): string {
 function transformValuesForPdf(values: Record<string, string>): Record<string, string> {
   const out = { ...values };
 
+  // Auto-stamp [[date_now]] with today's date at generation time (UTC, YYYY-MM-DD).
+  const now = new Date();
+  out['date_now'] = [
+    now.getUTCFullYear(),
+    String(now.getUTCMonth() + 1).padStart(2, '0'),
+    String(now.getUTCDate()).padStart(2, '0'),
+  ].join('-');
+
   // Prefix pickup/dropoff locations with labels
   const pickup = out['pickup_service'];
   if (pickup) {
